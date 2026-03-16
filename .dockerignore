@@ -1,0 +1,16 @@
+# Git
+.git
+*.desktop
+
+# Node
+front_tp_web/node_modules
+front_tp_web/.env.local
+
+# Vercel
+.vercel
+
+# Compiled object files (rebuilt in container)
+**/*.o
+
+# Logs
+/tmp
