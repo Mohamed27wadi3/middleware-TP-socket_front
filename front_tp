@@ -1,0 +1,113 @@
+#!/bin/bash
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+cleanup() {
+  pkill mmotsd 2>/dev/null
+  pkill mmotsd_remote 2>/dev/null
+  pkill incr_server 2>/dev/null
+  pkill calc_server 2>/dev/null
+  pkill socket_server 2>/dev/null
+}
+trap cleanup EXIT
+
+require_rpcbind() {
+  if ! rpcinfo -p >/dev/null 2>&1; then
+    echo "[!] rpcbind n'est pas lancé (portmapper). Lancez: sudo rpcbind -w" >&2
+    return 1
+  fi
+}
+
+exo1_local_demo() {
+  require_rpcbind || return
+  cd "$ROOT/exo1_local/mmots"
+  make >/dev/null
+  read -rp "Host (défaut localhost): " host; host=${host:-localhost}
+  echo "Démarrage serveur..."
+  ./mmotsd >/tmp/mmotsd_local.log 2>&1 &
+  srv=$!
+  sleep 1
+  echo "Client interactif (commande I/i/s/c/n/q). Appuie sur Ctrl+D ou q pour sortir."
+  ./mmots "$host"
+  kill $srv 2>/dev/null
+}
+
+exo1_remote_demo() {
+  require_rpcbind || return
+  cd "$ROOT/exo1_remote"
+  make >/dev/null
+  read -rp "Host serveur (défaut localhost): " host; host=${host:-localhost}
+  echo "Démarrage serveur distant..."
+  ./server/mmotsd_remote >/tmp/mmotsd_remote.log 2>&1 &
+  srv=$!
+  sleep 1
+  echo "Client interactif (commande I/i/s/c/n/q). Appuie sur Ctrl+D ou q pour sortir."
+  ./client/mmots_remote "$host"
+  kill $srv 2>/dev/null
+}
+
+exo2_demo() {
+  require_rpcbind || return
+  cd "$ROOT/exo2"
+  make >/dev/null
+  read -rp "Valeur à incrémenter (défaut 7): " val; val=${val:-7}
+  ./incr_server >/tmp/incr_server.log 2>&1 &
+  srv=$!
+  sleep 1
+  ./incr_client localhost "$val"
+  kill $srv 2>/dev/null
+}
+
+exo3_demo() {
+  require_rpcbind || return
+  cd "$ROOT/exo3"
+  make >/dev/null
+  read -rp "a (défaut 6): " a; a=${a:-6}
+  read -rp "b (défaut 3): " b; b=${b:-3}
+  ./calc_server >/tmp/calc_server.log 2>&1 &
+  srv=$!
+  sleep 1
+  ./calc_client localhost "$a" "$b"
+  read -rp "Second test a2 (défaut 5): " a2; a2=${a2:-5}
+  read -rp "b2 (défaut 0): " b2; b2=${b2:-0}
+  ./calc_client localhost "$a2" "$b2"
+  kill $srv 2>/dev/null
+}
+
+exo4_demo() {
+  cd "$ROOT/exo4"
+  make >/dev/null
+  read -rp "Host (défaut 127.0.0.1): " host; host=${host:-127.0.0.1}
+  read -rp "a (défaut 8): " a; a=${a:-8}
+  read -rp "b (défaut 4): " b; b=${b:-4}
+  ./socket_server >/tmp/socket_server.log 2>&1 &
+  srv=$!
+  sleep 1
+  ./socket_client "$host" "$a" "$b"
+  read -rp "Second test a2 (défaut 5): " a2; a2=${a2:-5}
+  read -rp "b2 (défaut 0): " b2; b2=${b2:-0}
+  ./socket_client "$host" "$a2" "$b2"
+  kill $srv 2>/dev/null
+}
+
+while true; do
+  cat <<MENU
+===== FRONT TP RPC/Sockets =====
+1) exo1_local (rpcgen dictionnaire local)
+2) exo1_remote (rpcgen dictionnaire distant)
+3) exo2 (increment RPC)
+4) exo3 (ops a+b/a/b/a-b/a*b RPC)
+5) exo4 (sockets)
+q) quitter
+MENU
+  read -rp "Choix: " choice
+  case "$choice" in
+    1) exo1_local_demo ;;
+    2) exo1_remote_demo ;;
+    3) exo2_demo ;;
+    4) exo3_demo ;;
+    5) exo4_demo ;;
+    q) exit 0 ;;
+    *) echo "Choix invalide" ;;
+  esac
+  echo
+done

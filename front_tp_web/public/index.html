@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Front TP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="controls">
+      <button data-exo="exo1_local">Exo 1 Local</button>
+      <button data-exo="exo1_remote">Exo 1 Remote</button>
+      <button data-exo="exo2">Exo 2 Increment</button>
+      <button data-exo="exo3">Exo 3 Opérations</button>
+      <button data-exo="exo4">Exo 4 Sockets</button>
+    </div>
+
+    <div class="terminal">
+      <div id="term-output" class="term-output"></div>
+      <div class="term-input-row">
+        <span class="prompt">$</span>
+        <input id="term-input" class="term-input" type="text" placeholder="Tape ici..." autocomplete="off" />
+      </div>
+    </div>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Front TP Middleware
+Comment=Ouvrir le front des exercices RPC/Sockets
+Exec=/bin/bash -lc "/home/kali/Desktop/TP Midleware/launch_front.sh"
+Icon=web-browser
+Terminal=false
+Categories=Development;Education;
